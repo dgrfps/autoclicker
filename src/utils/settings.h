@@ -25,7 +25,10 @@ public:
     {
         std::istringstream ss(this->getValue(key)); // using this->getValue to reuse the catch exception
         T num;
-        ss >> num;
+        
+        if(typeid(T).name() == typeid(bool).name()) ss >> std::boolalpha >> num;
+        else ss >> num;
+
         return (num);
     };
     void close();
