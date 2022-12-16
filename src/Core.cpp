@@ -11,29 +11,27 @@ void Core::Loader()
 	Settings settings(std::string("./config.ini"), false);
 	settings.load();
 
-	CPS::cps = settings.getValue<float>("cps");
-	CPS::setBind(settings.getValue("bind"));
+	CPS::cps = settings.getValue<float>("cps", 10);
+	auto bind = settings.getValue<std::string>("bind", "VK_XBUTTON2");
+	CPS::setBind(bind);
 
-	CPS::random = settings.getValue<bool>("random_cps");
-	CPS::bounds[0] = settings.getValue<float>("min");
-	CPS::bounds[1] = settings.getValue<float>("max");
-	CPS::press_delay = settings.getValue<float>("press_delay");
-	
-	log("[INFO] Config file loaded.\n\n");
+	CPS::random = settings.getValue<bool>("random_cps", false);
+	CPS::bounds[0] = settings.getValue<float>("min", 10);
+	CPS::bounds[1] = settings.getValue<float>("max", 15);
+	CPS::press_delay = settings.getValue<float>("press_delay", 20);
 
-	log("[CONFIG] Desired CPS: %.1f.\n", CPS::cps);
-	log("[CONFIG] Press delay: %.1f.\n", CPS::press_delay);
-	log("[CONFIG] Bind: %s.\n", settings.getValue("bind").c_str());
+	LOG("[INFO] Config file loaded.\n\n");
 
-	log("[CONFIG] Random CPS: %s.\n", CPS::random ? "true" : "false");
+	LOG("[CONFIG] Bind: %s.\n", bind.c_str());
+	LOG("[CONFIG] Desired CPS: %.1f.\n", CPS::cps);
+	LOG("[CONFIG] Press delay: %.1f.\n", CPS::press_delay);
+	LOG("[CONFIG] Random CPS: %s.\n", CPS::random ? "true" : "false");
 	if (CPS::random)
-		log("[CONFIG] Min CPS: %.1f.\n", CPS::bounds[0]);
-	if (CPS::random)
-		log("[CONFIG] Max CPS: %.1f.\n", CPS::bounds[1]);
+		LOG("[CONFIG] CPS Range: [%.1f., %.1f.]\n", CPS::bounds[0], CPS::bounds[1]);
 
 	CPS::initialize = true;
 
-	log("\n[INFO] Press 'DEL' to exit.\n");
+	LOG("\n[INFO] Press 'DEL' to exit.\n");
 
 	do
 	{

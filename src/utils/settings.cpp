@@ -7,7 +7,7 @@ void Settings::load()
     if (dbg)
         for (auto const &[key, val] : database)
         {
-            log("Settings (%s) -> %s\n", key.c_str(), val.c_str());
+            LOG("Settings (%s) -> %s\n", key.c_str(), val.c_str());
         }
 }
 
@@ -26,42 +26,65 @@ void Settings::loadFromFile()
     if (!isOpen()) // File doesnt exit
     {
         if (dbg)
-            log("CAN'T FIND CONFIG FILE, CREATING ONE\n");
+            LOG("CAN'T FIND CONFIG FILE, CREATING ONE\n");
 
-        createFile();
+        createDefaultFile();
         loadFromFile();
     }
     else
     {
         if (dbg)
-            log("CONFIG FILE OPENED\n");
+            LOG("CONFIG FILE OPENED\n");
     }
 }
 
-void Settings::createFile()
+void Settings::set(std::string key, std::string val)
+{
+    auto f = std::ofstream(__path, std::ios_base::binary | std::ios::app);
+
+    if (!f.is_open()) // COULDNT CREATE FILE
+    {
+        if (dbg)
+            LOG("CAN'T CREATE CONFIG FILE, EXITING\n");
+        exit(EXIT_FAILURE);
+    }
+
+    std::stringstream ss;
+    ss << key;
+    ss << " = ";
+    ss << val;
+    ss << "\n";
+
+    f << ss.rdbuf();
+    f.close();
+
+    loadFromFile();
+    readContent();
+}
+
+void Settings::createDefaultFile()
 {
     auto nf = std::ofstream(__path, std::ios_base::binary);
     if (!nf.is_open()) // COULDNT CREATE FILE
     {
         if (dbg)
-            log("CAN'T CREATE CONFIG FILE, EXITING\n");
+            LOG("CAN'T CREATE CONFIG FILE, EXITING\n");
         exit(EXIT_FAILURE);
     }
 
     if (dbg)
-        log("CONFIG FILE CREATED\n");
+        LOG("CONFIG FILE CREATED\n");
     std::stringstream ss;
-
     ss << "#AUTO GENERATED V1\n#FOR BIND USE https://pastebin.com/Etmtbm2C\n\n";
-   
-    ss << "cps = 10\n";
-    ss << "press_delay = 5\n";
-    ss << "bind = VK_XBUTTON1\n";
-    ss << "random_cps = false\n";
-    ss << "min = 1\n";
-    ss << "max = 10\n";
     nf << ss.rdbuf();
     nf.close();
+
+    set("bind", "VK_XBUTTON2");
+    set("cps", std::to_string(10));
+    set("press_delay", std::to_string(20));
+    set("random_cps", "false");
+    set("min", std::to_string(10));
+    set("max", std::to_string(15));
 }
 
 void Settings::readContent()
@@ -69,12 +92,12 @@ void Settings::readContent()
     if (!isOpen())
     {
         if (dbg)
-            log("CAN'T READ CONFIG FILE CONTENT BECAUSE FILE IS NOT OPEN");
+            LOG("CAN'T READ CONFIG FILE CONTENT BECAUSE FILE IS NOT OPEN\n");
         return;
     }
 
     if (dbg)
-        log("READING CONFIG FILE\n");
+        LOG("READING CONFIG FILE\n");
 
     std::string line;
     while (getline(file, line))
@@ -94,24 +117,10 @@ void Settings::readContent()
                         val = val.substr(1, val.size());
 
                     if (dbg)
-                        log("Pushing (%s) -> %s\n", key.c_str(), val.c_str());
+                        LOG("Pushing (%s) -> %s\n", key.c_str(), val.c_str());
                     database.insert({key, val});
                 }
             }
-    }
-}
-
-std::string Settings::getValue(std::string key)
-{
-    try
-    {
-        return database.at(key);
-    }
-    catch (const std::out_of_range &e)
-    {
-        if (dbg)
-            log("[CONFIG] CANNOT FIND KEY %s\n  -> %s \n -> Returning null\n", key.c_str(), e.what());
-        return "";
     }
 }
 
