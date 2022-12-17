@@ -11,7 +11,7 @@
 				"-w",
 				"-fdiagnostics-color=always",
 				"-g",
-				"${workspaceFolder}\\src\\utils\\*.cpp",
+				"${workspaceFolder}\\src\\utils\\**.cpp",
 				"${workspaceFolder}\\src\\*.cpp",				
 				"-o",
 				"${workspaceFolder}\\output\\henda.exe"
